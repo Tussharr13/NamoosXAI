@@ -2,6 +2,7 @@ import { Sparkles, MessageSquare, TrendingUp, Users } from 'lucide-react';
 import NamoosXLogo from './NamoosXLogo';
 import { BrandIcon, BrandFull } from './Brand';
 import SiriOrb from './SiriOrb';
+import { useEffect, useState, useRef } from 'react';
 
 function AnimatedNamoosXLogo() {
   return (
@@ -51,6 +52,18 @@ function AnimatedNamoosXLogo() {
 }
 
 export default function Hero() {
+  const [scrolled, setScrolled] = useState(false);
+  const heroRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const heroHeight = heroRef.current?.offsetHeight || 0;
+      setScrolled(window.scrollY > heroHeight - 80); // toggle after leaving hero
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   const handleExploreSolutions = () => {
     // Scroll to products section
     const productsSection = document.getElementById('products');
@@ -68,21 +81,22 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
+    <section ref={heroRef} className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-10 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl animate-float"></div>
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-float-delayed"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-br from-sky-500/5 to-blue-500/5 rounded-full blur-3xl"></div>
       </div>
 
-      <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-3 bg-slate-900/70 backdrop-blur-sm border-b border-slate-800">
+      <nav className={`${scrolled ? 'bg-white/95 border-slate-200 text-slate-700' : 'bg-slate-900/70 border-slate-800 text-slate-300'} fixed top-0 left-0 right-0 z-50 px-6 py-3 backdrop-blur-sm border-b transition-colors duration-300`}
+      >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <BrandFull size={120} variant="light" />
-          <div className="hidden md:flex space-x-8 text-slate-300">
-            <a href="#about" className="hover:text-sky-400 transition">About</a>
-            <a href="#products" className="hover:text-sky-400 transition">Products</a>
-            <a href="#industries" className="hover:text-sky-400 transition">Industries</a>
-            <a href="#contact" className="hover:text-sky-400 transition">Contact</a>
+          <BrandFull size={120} variant={scrolled ? 'dark' : 'light'} src={scrolled ? '/3-Photoroom.png' : undefined} />
+          <div className={`hidden md:flex space-x-8 ${scrolled ? 'text-slate-700' : 'text-slate-300'}`}>
+            <a href="#about" className={`transition ${scrolled ? 'hover:text-sky-600' : 'hover:text-sky-400'}`}>About</a>
+            <a href="#products" className={`transition ${scrolled ? 'hover:text-sky-600' : 'hover:text-sky-400'}`}>Products</a>
+            <a href="#industries" className={`transition ${scrolled ? 'hover:text-sky-600' : 'hover:text-sky-400'}`}>Industries</a>
+            <a href="#contact" className={`transition ${scrolled ? 'hover:text-sky-600' : 'hover:text-sky-400'}`}>Contact</a>
           </div>
         </div>
       </nav>

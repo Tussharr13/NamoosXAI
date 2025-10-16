@@ -1,24 +1,25 @@
 interface BrandProps {
   size?: number;
   className?: string;
+  src?: string; // optional explicit image source override
 }
 
 type FullVariant = 'light' | 'dark';
 
-export function BrandFull({ size = 160, className = '', variant = 'light' }: BrandProps & { variant?: FullVariant }) {
+export function BrandFull({ size = 160, className = '', variant = 'light', src }: BrandProps & { variant?: FullVariant }) {
   // Prefer user's new provided file for both variants
   const candidates = [
     '/4-removebg-preview.png',
     '/4.png',
-    '/@3-Photoroom.png',
+    '/3-Photoroom.png',
     '/3.png',
     variant === 'dark' ? '/namoosx-logo-full-dark.png' : '/namoosx-logo-full.png',
     variant === 'dark' ? '/logos/namoosx-logo-full-dark.png' : '/logos/namoosx-logo-full.png',
   ];
-  const src = candidates[0];
+  const resolvedSrc = src || candidates[0];
   return (
     <img
-      src={src}
+      src={resolvedSrc}
       alt="NamoosX"
       style={{ width: size, height: 'auto' }}
       className={className}
