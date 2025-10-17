@@ -1,72 +1,54 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { BrandFull } from './Brand';
+import React, { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 
-interface NavbarProps {
-  variant?: 'transparent' | 'solid';
-  scrollThreshold?: number;
+export type PillNavItem = {
+  label: string;
+  href: string;
+  ariaLabel?: string;
+};
+
+export interface PillNavProps {
+  logo: string;
+  logoAlt?: string;
+  items: PillNavItem[];
+  activeHref?: string;
+  className?: string;
+  ease?: string;
+  baseColor?: string;
+  pillColor?: string;
+  hoveredPillTextColor?: string;
+  pillTextColor?: string;
+  onMobileMenuClick?: () => void;
+  initialLoadAnimation?: boolean;
 }
 
-// Define navLinks outside component to prevent re-creation
-const NAV_LINKS = [
-  { href: '#about', label: 'About' },
-  { href: '#products', label: 'Products' },
-  { href: '#industries', label: 'Industries' },
-  { href: '#contact', label: 'Contact' },
-] as const;
-
-export default function Navbar({ variant = 'transparent', scrollThreshold = 80 }: NavbarProps) {
-  const [scrolled, setScrolled] = useState(false);
-  const [activeHref, setActiveHref] = useState('#');
+const PillNav: React.FC<PillNavProps> = ({
+  logo,
+  logoAlt = 'Logo',
+  items,
+  activeHref,
+  className = '',
+  ease = 'power3.easeOut',
+  baseColor = '#fff',
+  pillColor = '#060010',
+  hoveredPillTextColor = '#060010',
+  pillTextColor,
+  onMobileMenuClick,
+  initialLoadAnimation = true
+}) => {
+  const resolvedPillTextColor = pillTextColor ?? baseColor;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
   const circleRefs = useRef<Array<HTMLSpanElement | null>>([]);
   const tlRefs = useRef<Array<gsap.core.Timeline | null>>([]);
   const activeTweenRefs = useRef<Array<gsap.core.Tween | null>>([]);
+  const logoImgRef = useRef<HTMLImageElement | null>(null);
+  const logoTweenRef = useRef<gsap.core.Tween | null>(null);
   const hamburgerRef = useRef<HTMLButtonElement | null>(null);
   const mobileMenuRef = useRef<HTMLDivElement | null>(null);
   const navItemsRef = useRef<HTMLDivElement | null>(null);
+  const logoRef = useRef<HTMLAnchorElement | HTMLElement | null>(null);
 
   useEffect(() => {
-    // Throttle scroll handler with requestAnimationFrame
-    let ticking = false;
-    const handleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          setScrolled(window.scrollY > scrollThreshold);
-          
-          // Update active section based on scroll position
-          const sections = ['about', 'products', 'industries', 'contact'];
-          for (const section of sections) {
-            const element = document.getElementById(section);
-            if (element) {
-              const rect = element.getBoundingClientRect();
-              if (rect.top <= 100 && rect.bottom >= 100) {
-                setActiveHref(`#${section}`);
-                break;
-              }
-            }
-          }
-          
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [scrollThreshold]);
-
-  // Memoize computed values to prevent unnecessary re-renders
-  const isTransparent = useMemo(() => variant === 'transparent' && !scrolled, [variant, scrolled]);
-  const ease = 'power2.easeOut';
-
-  // Pill animation setup - only run on mount and resize
-  useEffect(() => {
-    let layoutTimeoutId: NodeJS.Timeout | null = null;
-    
     const layout = () => {
       circleRefs.current.forEach(circle => {
         if (!circle?.parentElement) return;
@@ -86,7 +68,7 @@ export default function Navbar({ variant = 'transparent', scrollThreshold = 80 }
         gsap.set(circle, {
           xPercent: -50,
           scale: 0,
-          transformOrigin: `50% ${originY}px`
+          transformOrigin: `50% ${originY}px` 
         });
 
         const label = pill.querySelector<HTMLElement>('.pill-label');
@@ -116,39 +98,45 @@ export default function Navbar({ variant = 'transparent', scrollThreshold = 80 }
       });
     };
 
-    // Initial layout with slight delay to ensure DOM is ready
-    layoutTimeoutId = setTimeout(layout, 100);
+    layout();
 
-    // Debounced resize handler to prevent excessive layout recalculations
-    let resizeTimeoutId: NodeJS.Timeout;
-    const onResize = () => {
-      clearTimeout(resizeTimeoutId);
-      resizeTimeoutId = setTimeout(layout, 150);
-    };
+    const onResize = () => layout();
     window.addEventListener('resize', onResize);
+
+    if (document.fonts) {
+      document.fonts.ready.then(layout).catch(() => {});
+    }
 
     const menu = mobileMenuRef.current;
     if (menu) {
-      gsap.set(menu, { visibility: 'hidden', opacity: 0, y: 0 });
+      gsap.set(menu, { visibility: 'hidden', opacity: 0, scaleY: 1, y: 0 });
     }
 
-    const navItems = navItemsRef.current;
-    if (navItems) {
-      gsap.set(navItems, { width: 0, overflow: 'hidden' });
-      gsap.to(navItems, {
-        width: 'auto',
-        duration: 0.6,
-        ease
-      });
+    if (initialLoadAnimation) {
+      const logo = logoRef.current;
+      const navItems = navItemsRef.current;
+
+      if (logo) {
+        gsap.set(logo, { scale: 0 });
+        gsap.to(logo, {
+          scale: 1,
+          duration: 0.6,
+          ease
+        });
+      }
+
+      if (navItems) {
+        gsap.set(navItems, { width: 0, overflow: 'hidden' });
+        gsap.to(navItems, {
+          width: 'auto',
+          duration: 0.6,
+          ease
+        });
+      }
     }
 
-    return () => {
-      window.removeEventListener('resize', onResize);
-      if (layoutTimeoutId) clearTimeout(layoutTimeoutId);
-      if (resizeTimeoutId) clearTimeout(resizeTimeoutId);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run on mount
+    return () => window.removeEventListener('resize', onResize);
+  }, [items, ease, initialLoadAnimation]);
 
   const handleEnter = (i: number) => {
     const tl = tlRefs.current[i];
@@ -166,6 +154,19 @@ export default function Navbar({ variant = 'transparent', scrollThreshold = 80 }
     if (!tl) return;
     activeTweenRefs.current[i]?.kill();
     activeTweenRefs.current[i] = tl.tweenTo(0, {
+      duration: 0.2,
+      ease,
+      overwrite: 'auto'
+    });
+  };
+
+  const handleLogoEnter = () => {
+    const img = logoImgRef.current;
+    if (!img) return;
+    logoTweenRef.current?.kill();
+    gsap.set(img, { rotate: 0 });
+    logoTweenRef.current = gsap.to(img, {
+      rotate: 360,
       duration: 0.2,
       ease,
       overwrite: 'auto'
@@ -195,10 +196,11 @@ export default function Navbar({ variant = 'transparent', scrollThreshold = 80 }
         gsap.set(menu, { visibility: 'visible' });
         gsap.fromTo(
           menu,
-          { opacity: 0, y: 10 },
+          { opacity: 0, y: 10, scaleY: 1 },
           {
             opacity: 1,
             y: 0,
+            scaleY: 1,
             duration: 0.3,
             ease,
             transformOrigin: 'top center'
@@ -208,6 +210,7 @@ export default function Navbar({ variant = 'transparent', scrollThreshold = 80 }
         gsap.to(menu, {
           opacity: 0,
           y: 10,
+          scaleY: 1,
           duration: 0.2,
           ease,
           transformOrigin: 'top center',
@@ -217,54 +220,50 @@ export default function Navbar({ variant = 'transparent', scrollThreshold = 80 }
         });
       }
     }
+
+    onMobileMenuClick?.();
   };
 
-  // Memoize CSS variables to prevent unnecessary recalculations
-  const cssVars = useMemo(() => {
-    const baseColor = isTransparent ? '#1e293b' : '#ffffff';
-    const pillColor = isTransparent ? '#0f172a' : '#f8fafc';
-    const hoveredPillTextColor = isTransparent ? '#38bdf8' : '#0ea5e9';
-    const pillTextColor = isTransparent ? '#e2e8f0' : '#334155';
+  // All navigation is hash-based, no need for router link detection
 
-    return {
-      ['--base']: baseColor,
-      ['--pill-bg']: pillColor,
-      ['--hover-text']: hoveredPillTextColor,
-      ['--pill-text']: pillTextColor,
-      ['--nav-h']: '42px',
-      ['--pill-pad-x']: '18px',
-      ['--pill-gap']: '3px'
-    } as React.CSSProperties;
-  }, [isTransparent]);
+  const cssVars = {
+    ['--base']: baseColor,
+    ['--pill-bg']: pillColor,
+    ['--hover-text']: hoveredPillTextColor,
+    ['--pill-text']: resolvedPillTextColor,
+    ['--nav-h']: '42px',
+    ['--logo']: '36px',
+    ['--pill-pad-x']: '18px',
+    ['--pill-gap']: '3px'
+  } as React.CSSProperties;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 p-4">
-      <div 
-        className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3 rounded-2xl backdrop-blur-xl border shadow-lg transition-all duration-300" 
-        style={{
-          ...cssVars,
-          background: isTransparent 
-            ? 'rgba(15, 23, 42, 0.7)' 
-            : 'rgba(255, 255, 255, 0.8)',
-          borderColor: isTransparent 
-            ? 'rgba(148, 163, 184, 0.1)' 
-            : 'rgba(226, 232, 240, 0.8)',
-          boxShadow: isTransparent
-            ? '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
-            : '0 8px 32px 0 rgba(31, 38, 135, 0.15)'
-        }}
+    <div className="absolute top-[1em] z-[1000] w-full left-0 md:w-auto md:left-auto">
+      <nav
+        className={`w-full md:w-max flex items-center justify-between md:justify-start box-border px-4 md:px-0 ${className}`}
+        aria-label="Primary"
+        style={cssVars}
       >
-        {/* Original Logo */}
-        <BrandFull
-          size={120}
-          variant={isTransparent ? 'light' : 'dark'}
-          src={isTransparent ? undefined : '/3-Photoroom.png'}
-        />
+        <a
+          href={items?.[0]?.href || '#'}
+          aria-label="Home"
+          onMouseEnter={handleLogoEnter}
+          ref={el => {
+            logoRef.current = el;
+          }}
+          className="rounded-full p-2 inline-flex items-center justify-center overflow-hidden"
+          style={{
+            width: 'var(--nav-h)',
+            height: 'var(--nav-h)',
+            background: 'var(--base, #000)'
+          }}
+        >
+          <img src={logo} alt={logoAlt} ref={logoImgRef} className="w-full h-full object-cover block" />
+        </a>
 
-        {/* Pill Navigation Items */}
         <div
           ref={navItemsRef}
-          className="relative items-center rounded-full hidden md:flex ml-auto"
+          className="relative items-center rounded-full hidden md:flex ml-2"
           style={{
             height: 'var(--nav-h)',
             background: 'var(--base, #000)'
@@ -275,7 +274,7 @@ export default function Navbar({ variant = 'transparent', scrollThreshold = 80 }
             className="list-none flex items-stretch m-0 p-[3px] h-full"
             style={{ gap: 'var(--pill-gap)' }}
           >
-            {NAV_LINKS.map((item, i) => {
+            {items.map((item, i) => {
               const isActive = activeHref === item.href;
 
               const pillStyle: React.CSSProperties = {
@@ -336,7 +335,7 @@ export default function Navbar({ variant = 'transparent', scrollThreshold = 80 }
                     href={item.href}
                     className={basePillClasses}
                     style={pillStyle}
-                    aria-label={item.label}
+                    aria-label={item.ariaLabel || item.label}
                     onMouseEnter={() => handleEnter(i)}
                     onMouseLeave={() => handleLeave(i)}
                   >
@@ -348,7 +347,6 @@ export default function Navbar({ variant = 'transparent', scrollThreshold = 80 }
           </ul>
         </div>
 
-        {/* Mobile Menu Button */}
         <button
           ref={hamburgerRef}
           onClick={toggleMobileMenu}
@@ -358,36 +356,30 @@ export default function Navbar({ variant = 'transparent', scrollThreshold = 80 }
           style={{
             width: 'var(--nav-h)',
             height: 'var(--nav-h)',
-            background: 'var(--pill-bg, #fff)'
+            background: 'var(--base, #000)'
           }}
         >
           <span
-            className="hamburger-line w-4 h-0.5 rounded origin-center"
-            style={{ background: isTransparent ? '#e2e8f0' : '#334155' }}
+            className="hamburger-line w-4 h-0.5 rounded origin-center transition-all duration-[10ms] ease-[cubic-bezier(0.25,0.1,0.25,1)]"
+            style={{ background: 'var(--pill-bg, #fff)' }}
           />
           <span
-            className="hamburger-line w-4 h-0.5 rounded origin-center"
-            style={{ background: isTransparent ? '#e2e8f0' : '#334155' }}
+            className="hamburger-line w-4 h-0.5 rounded origin-center transition-all duration-[10ms] ease-[cubic-bezier(0.25,0.1,0.25,1)]"
+            style={{ background: 'var(--pill-bg, #fff)' }}
           />
         </button>
-      </div>
+      </nav>
 
-      {/* Mobile Menu */}
       <div
         ref={mobileMenuRef}
-        className="md:hidden absolute top-[5em] left-4 right-4 rounded-[27px] shadow-[0_8px_32px_rgba(0,0,0,0.37)] z-[998] origin-top backdrop-blur-xl border"
+        className="md:hidden absolute top-[3em] left-4 right-4 rounded-[27px] shadow-[0_8px_32px_rgba(0,0,0,0.12)] z-[998] origin-top"
         style={{
           ...cssVars,
-          background: isTransparent 
-            ? 'rgba(15, 23, 42, 0.8)' 
-            : 'rgba(255, 255, 255, 0.85)',
-          borderColor: isTransparent 
-            ? 'rgba(148, 163, 184, 0.1)' 
-            : 'rgba(226, 232, 240, 0.8)'
+          background: 'var(--base, #f0f0f0)'
         }}
       >
         <ul className="list-none m-0 p-[3px] flex flex-col gap-[3px]">
-          {NAV_LINKS.map(item => {
+          {items.map(item => {
             const defaultStyle: React.CSSProperties = {
               background: 'var(--pill-bg, #fff)',
               color: 'var(--pill-text, #fff)'
@@ -402,7 +394,7 @@ export default function Navbar({ variant = 'transparent', scrollThreshold = 80 }
             };
 
             const linkClasses =
-              'block py-3 px-4 text-[16px] font-medium rounded-[50px] transition-all duration-200';
+              'block py-3 px-4 text-[16px] font-medium rounded-[50px] transition-all duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)]';
 
             return (
               <li key={item.href}>
@@ -423,4 +415,6 @@ export default function Navbar({ variant = 'transparent', scrollThreshold = 80 }
       </div>
     </div>
   );
-}
+};
+
+export default PillNav;

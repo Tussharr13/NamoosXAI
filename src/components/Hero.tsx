@@ -1,27 +1,31 @@
 import { Sparkles, MessageSquare, TrendingUp, Users } from 'lucide-react';
 import SiriOrb from './SiriOrb';
-import { useRef } from 'react';
+import { useRef, useMemo, useCallback, memo } from 'react';
 import { isLowEndDevice, isTouchDevice } from '../utils/deviceDetection';
 
-export default function Hero() {
-  const heroRef = useRef<HTMLElement | null>(null);
-  const lowEndMode = isLowEndDevice();
-  const isTouch = isTouchDevice();
-  const handleExploreSolutions = () => {
-    // Scroll to products section
-    const productsSection = document.getElementById('products');
-    if (productsSection) {
-      productsSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+// Helper function for smooth scroll
+const scrollToSection = (sectionId: string) => {
+  const section = document.getElementById(sectionId);
+  if (section) {
+    section.scrollIntoView({ behavior: 'smooth' });
+  }
+};
 
-  const handleRequestDemo = () => {
-    // Scroll to contact section
-    const contactSection = document.getElementById('contact');
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+const Hero = memo(() => {
+  const heroRef = useRef<HTMLElement | null>(null);
+  
+  // Memoize device detection to prevent recalculation on every render
+  const lowEndMode = useMemo(() => isLowEndDevice(), []);
+  const isTouch = useMemo(() => isTouchDevice(), []);
+  
+  // Memoize callbacks to prevent re-creation on every render
+  const handleExploreSolutions = useCallback(() => {
+    scrollToSection('products');
+  }, []);
+
+  const handleRequestDemo = useCallback(() => {
+    scrollToSection('contact');
+  }, []);
 
   return (
     <section ref={heroRef} className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
@@ -116,4 +120,8 @@ export default function Hero() {
       </div>
     </section>
   );
-}
+});
+
+Hero.displayName = 'Hero';
+
+export default Hero;

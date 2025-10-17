@@ -1,9 +1,46 @@
 import { Linkedin, Twitter, Youtube, Mail, Phone, MapPin } from 'lucide-react';
 import { BrandFull } from './Brand';
 import { BackgroundBeams } from './ui/beams';
+import { useMemo, memo } from 'react';
 
-export default function Footer() {
-  const currentYear = new Date().getFullYear();
+// Extract constants outside component
+const SOCIAL_LINKS = [
+  { icon: Linkedin, href: '#', label: 'LinkedIn' },
+  { icon: Twitter, href: '#', label: 'Twitter' },
+  { icon: Youtube, href: '#', label: 'YouTube' },
+] as const;
+
+const QUICK_LINKS = [
+  { href: '#', label: 'Home' },
+  { href: '#about', label: 'About' },
+  { href: '#products', label: 'Products' },
+  { href: '#industries', label: 'Industries' },
+  { href: '#', label: 'Blog' },
+] as const;
+
+const SOLUTIONS = [
+  { href: '#', label: 'AI Sales Bot' },
+  { href: '#', label: 'Customer Support' },
+  { href: '#', label: 'Voice Agents' },
+  { href: '#', label: 'HR Assistant' },
+  { href: '#', label: 'Healthcare AI' },
+] as const;
+
+const CONTACT_INFO = [
+  { icon: Mail, text: 'contact@namoosx.ai', type: 'email' },
+  { icon: Phone, text: '+1 (555) 123-4567', type: 'phone' },
+  { icon: MapPin, text: '123 AI Street, Tech Valley, CA 94025', type: 'address' },
+] as const;
+
+const LEGAL_LINKS = [
+  { href: '#', label: 'Privacy Policy' },
+  { href: '#', label: 'Terms of Service' },
+  { href: '#', label: 'Cookie Policy' },
+] as const;
+
+const Footer = memo(() => {
+  // Memoize year to prevent recalculation on every render
+  const currentYear = useMemo(() => new Date().getFullYear(), []);
 
   return (
     <footer className="relative bg-slate-900 text-white py-16 overflow-hidden min-h-[400px]">
@@ -18,104 +55,54 @@ export default function Footer() {
               Empowering businesses with next-generation conversational and voice AI solutions.
             </p>
             <div className="flex space-x-3">
-              <a
-                href="#"
-                className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-sky-600 transition-colors"
-              >
-                <Linkedin className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-sky-600 transition-colors"
-              >
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-sky-600 transition-colors"
-              >
-                <Youtube className="w-5 h-5" />
-              </a>
+              {SOCIAL_LINKS.map(({ icon: Icon, href, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-sky-600 transition-colors"
+                >
+                  <Icon className="w-5 h-5" />
+                </a>
+              ))}
             </div>
           </div>
 
           <div>
             <h3 className="text-lg font-bold mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li>
-                <a href="#" className="text-slate-400 hover:text-sky-400 transition-colors">
-                  Home
-                </a>
-              </li>
-              <li>
-                <a href="#about" className="text-slate-400 hover:text-sky-400 transition-colors">
-                  About
-                </a>
-              </li>
-              <li>
-                <a href="#products" className="text-slate-400 hover:text-sky-400 transition-colors">
-                  Products
-                </a>
-              </li>
-              <li>
-                <a href="#industries" className="text-slate-400 hover:text-sky-400 transition-colors">
-                  Industries
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-slate-400 hover:text-sky-400 transition-colors">
-                  Blog
-                </a>
-              </li>
+              {QUICK_LINKS.map(({ href, label }) => (
+                <li key={label}>
+                  <a href={href} className="text-slate-400 hover:text-sky-400 transition-colors">
+                    {label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
           <div>
             <h3 className="text-lg font-bold mb-4">Solutions</h3>
             <ul className="space-y-2">
-              <li>
-                <a href="#" className="text-slate-400 hover:text-sky-400 transition-colors">
-                  AI Sales Bot
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-slate-400 hover:text-sky-400 transition-colors">
-                  Customer Support
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-slate-400 hover:text-sky-400 transition-colors">
-                  Voice Agents
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-slate-400 hover:text-sky-400 transition-colors">
-                  HR Assistant
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-slate-400 hover:text-sky-400 transition-colors">
-                  Healthcare AI
-                </a>
-              </li>
+              {SOLUTIONS.map(({ href, label }) => (
+                <li key={label}>
+                  <a href={href} className="text-slate-400 hover:text-sky-400 transition-colors">
+                    {label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
           <div>
             <h3 className="text-lg font-bold mb-4">Contact Us</h3>
             <ul className="space-y-3">
-              <li className="flex items-center space-x-2 text-slate-400">
-                <Mail className="w-5 h-5 text-sky-400" />
-                <span>contact@namoosx.ai</span>
-              </li>
-              <li className="flex items-center space-x-2 text-slate-400">
-                <Phone className="w-5 h-5 text-sky-400" />
-                <span>+1 (555) 123-4567</span>
-              </li>
-              <li className="flex items-start space-x-2 text-slate-400">
-                <MapPin className="w-5 h-5 text-sky-400 flex-shrink-0 mt-1" />
-                <span>123 AI Street, Tech Valley, CA 94025</span>
-              </li>
+              {CONTACT_INFO.map(({ icon: Icon, text, type }) => (
+                <li key={type} className={`flex ${type === 'address' ? 'items-start' : 'items-center'} space-x-2 text-slate-400`}>
+                  <Icon className={`w-5 h-5 text-sky-400 ${type === 'address' ? 'flex-shrink-0 mt-1' : ''}`} />
+                  <span>{text}</span>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
@@ -126,19 +113,19 @@ export default function Footer() {
               © {currentYear} NamoosX. All Rights Reserved.
             </p>
             <div className="flex space-x-6 text-sm">
-              <a href="#" className="text-slate-400 hover:text-sky-400 transition-colors">
-                Privacy Policy
-              </a>
-              <a href="#" className="text-slate-400 hover:text-sky-400 transition-colors">
-                Terms of Service
-              </a>
-              <a href="#" className="text-slate-400 hover:text-sky-400 transition-colors">
-                Cookie Policy
-              </a>
+              {LEGAL_LINKS.map(({ href, label }) => (
+                <a key={label} href={href} className="text-slate-400 hover:text-sky-400 transition-colors">
+                  {label}
+                </a>
+              ))}
             </div>
           </div>
         </div>
       </div>
     </footer>
   );
-}
+});
+
+Footer.displayName = 'Footer';
+
+export default Footer;
