@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { getDevicePixelRatio } from '../utils/deviceDetection';
 
 type SiriOrbProps = {
   hue?: number;
@@ -97,86 +98,134 @@ export default function SiriOrb({
     void main(){ vec2 fragCoord=vUv*iResolution.xy; vec4 col=mainImage(fragCoord); gl_FragColor=vec4(col.rgb*col.a,col.a); }
   `;
 
+  const [, setIsVisible] = useState(true);
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+
+    // Intersection Observer to pause when not visible
+    const observer = new IntersectionObserver(
+      (entries) => {
+        setIsVisible(entries[0].isIntersecting);
+      },
+      { threshold: 0 }
+    );
+    observer.observe(container);
+
     const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false });
-    if (!gl) return;
-    glRef.current = gl;
-    gl.clearColor(0, 0, 0, 0);
-    container.appendChild(canvas);
+    // Hoisted refs for cleanup safety
+    let gl!: WebGLRenderingContext;
+    let resize: (() => void) | null = null;
+    let handleMouseMove: ((e: MouseEvent) => void) | null = null;
+    let handleMouseLeave: (() => void) | null = null;
+    let isAnimating = true;
+    try {
+      const opts = { alpha: true, premultipliedAlpha: false } as WebGLContextAttributes;
+      const ctx = (canvas.getContext('webgl', opts) || canvas.getContext('experimental-webgl', opts)) as WebGLRenderingContext | null;
+      if (!ctx) return;
+      gl = ctx;
+      glRef.current = gl;
+      gl.clearColor(0, 0, 0, 0);
+      container.appendChild(canvas);
 
-    const vertShader = gl.createShader(gl.VERTEX_SHADER)!; gl.shaderSource(vertShader, vert); gl.compileShader(vertShader);
-    const fragShader = gl.createShader(gl.FRAGMENT_SHADER)!; gl.shaderSource(fragShader, frag); gl.compileShader(fragShader);
-    const program = gl.createProgram()!; gl.attachShader(program, vertShader); gl.attachShader(program, fragShader); gl.linkProgram(program); gl.useProgram(program);
+      const vertShader = gl.createShader(gl.VERTEX_SHADER)!; gl.shaderSource(vertShader, vert); gl.compileShader(vertShader);
+      if (!gl.getShaderParameter(vertShader, gl.COMPILE_STATUS)) { return; }
+      const fragShader = gl.createShader(gl.FRAGMENT_SHADER)!; gl.shaderSource(fragShader, frag); gl.compileShader(fragShader);
+      if (!gl.getShaderParameter(fragShader, gl.COMPILE_STATUS)) { return; }
+      const program = gl.createProgram()!; gl.attachShader(program, vertShader); gl.attachShader(program, fragShader); gl.linkProgram(program);
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) { return; }
+      gl.useProgram(program);
 
-    const positions = new Float32Array([-1, -1, 3, -1, -1, 3]);
-    const uvs = new Float32Array([0, 0, 2, 0, 0, 2]);
+      const positions = new Float32Array([-1, -1, 3, -1, -1, 3]);
+      const uvs = new Float32Array([0, 0, 2, 0, 0, 2]);
 
-    const posBuffer = gl.createBuffer()!; gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer); gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-    const posLoc = gl.getAttribLocation(program, 'position'); gl.enableVertexAttribArray(posLoc); gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
-    const uvBuffer = gl.createBuffer()!; gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer); gl.bufferData(gl.ARRAY_BUFFER, uvs, gl.STATIC_DRAW);
-    const uvLoc = gl.getAttribLocation(program, 'uv'); gl.enableVertexAttribArray(uvLoc); gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, 0, 0);
+      const posBuffer = gl.createBuffer()!; gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer); gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+      const posLoc = gl.getAttribLocation(program, 'position'); gl.enableVertexAttribArray(posLoc); gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+      const uvBuffer = gl.createBuffer()!; gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer); gl.bufferData(gl.ARRAY_BUFFER, uvs, gl.STATIC_DRAW);
+      const uvLoc = gl.getAttribLocation(program, 'uv'); gl.enableVertexAttribArray(uvLoc); gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, 0, 0);
 
-    const uniforms = {
-      iTime: gl.getUniformLocation(program, 'iTime'),
-      iResolution: gl.getUniformLocation(program, 'iResolution'),
-      hue: gl.getUniformLocation(program, 'hue'),
-      hover: gl.getUniformLocation(program, 'hover'),
-      rot: gl.getUniformLocation(program, 'rot'),
-      hoverIntensity: gl.getUniformLocation(program, 'hoverIntensity'),
-      animSpeed: gl.getUniformLocation(program, 'animSpeed')
-    } as const;
+      const uniforms = {
+        iTime: gl.getUniformLocation(program, 'iTime'),
+        iResolution: gl.getUniformLocation(program, 'iResolution'),
+        hue: gl.getUniformLocation(program, 'hue'),
+        hover: gl.getUniformLocation(program, 'hover'),
+        rot: gl.getUniformLocation(program, 'rot'),
+        hoverIntensity: gl.getUniformLocation(program, 'hoverIntensity'),
+        animSpeed: gl.getUniformLocation(program, 'animSpeed')
+      } as const;
 
-    let currentHover = 0; let targetHover = 0; let currentRot = 0; let lastTime = 0;
+      let currentHover = 0; let targetHover = 0; let currentRot = 0; let lastTime = 0;
 
-    function resize(){
-      const dpr = window.devicePixelRatio || 1; const width = container.clientWidth; const height = container.clientHeight;
-      canvas.width = width * dpr; canvas.height = height * dpr; canvas.style.width = width + 'px'; canvas.style.height = height + 'px';
-      gl.viewport(0, 0, canvas.width, canvas.height);
-      gl.uniform3f(uniforms.iResolution, canvas.width, canvas.height, canvas.width / canvas.height);
+      const _resize = () => {
+        // Use optimized DPR for low-end devices
+        const dpr = getDevicePixelRatio(); 
+        const width = container.clientWidth; 
+        const height = container.clientHeight;
+        canvas.width = width * dpr; 
+        canvas.height = height * dpr; 
+        canvas.style.width = width + 'px'; 
+        canvas.style.height = height + 'px';
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.uniform3f(uniforms.iResolution, canvas.width, canvas.height, canvas.width / canvas.height);
+      };
+      resize = _resize;
+
+      const _handleMouseMove = (e: MouseEvent) => {
+        const rect = container.getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+        const width = rect.width; const height = rect.height; const size = Math.min(width, height);
+        const centerX = width / 2; const centerY = height / 2; const uvX = ((x - centerX) / size) * 2.0; const uvY = ((y - centerY) / size) * 2.0;
+        targetHover = Math.sqrt(uvX * uvX + uvY * uvY) < 0.8 ? 1 : 0;
+      };
+      handleMouseMove = _handleMouseMove;
+      const _handleMouseLeave = () => { targetHover = 0; };
+      handleMouseLeave = _handleMouseLeave;
+
+      container.addEventListener('mousemove', _handleMouseMove);
+      container.addEventListener('mouseleave', _handleMouseLeave);
+      window.addEventListener('resize', _resize);
+      _resize();
+
+      const update = (t: number) => {
+        // Only animate if visible and not paused
+        if (!isAnimating) return;
+        
+        const dt = (t - lastTime) * 0.001; lastTime = t;
+        const effectiveHover = forceHoverState ? 1 : targetHover; 
+        currentHover += (effectiveHover - currentHover) * 0.1;
+        if (rotateOnHover && effectiveHover > 0.5) currentRot += dt * 0.3;
+        const speed = currentHover > 0.5 ? 0.7 : (animSpeed ?? 0.6);
+        gl.uniform1f(uniforms.animSpeed, speed);
+        gl.uniform1f(uniforms.iTime, t * 0.001);
+        gl.uniform1f(uniforms.hue, hue);
+        gl.uniform1f(uniforms.hover, currentHover);
+        gl.uniform1f(uniforms.rot, currentRot);
+        gl.uniform1f(uniforms.hoverIntensity, hoverIntensity);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        rafRef.current = requestAnimationFrame(update);
+      };
+      rafRef.current = requestAnimationFrame(update);
+
+    } catch (_) {
+      return;
     }
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = container.getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top;
-      const width = rect.width; const height = rect.height; const size = Math.min(width, height);
-      const centerX = width / 2; const centerY = height / 2; const uvX = ((x - centerX) / size) * 2.0; const uvY = ((y - centerY) / size) * 2.0;
-      targetHover = Math.sqrt(uvX * uvX + uvY * uvY) < 0.8 ? 1 : 0;
-    };
-    const handleMouseLeave = () => { targetHover = 0; };
-
-    container.addEventListener('mousemove', handleMouseMove);
-    container.addEventListener('mouseleave', handleMouseLeave);
-    window.addEventListener('resize', resize);
-    resize();
-
-    const update = (t: number) => {
-      const dt = (t - lastTime) * 0.001; lastTime = t;
-      const effectiveHover = forceHoverState ? 1 : targetHover; currentHover += (effectiveHover - currentHover) * 0.1;
-      if (rotateOnHover && effectiveHover > 0.5) currentRot += dt * 0.3;
-      const speed = currentHover > 0.5 ? 0.7 : (animSpeed ?? 0.6);
-      gl.uniform1f(uniforms.animSpeed, speed);
-      gl.uniform1f(uniforms.iTime, t * 0.001);
-      gl.uniform1f(uniforms.hue, hue);
-      gl.uniform1f(uniforms.hover, currentHover);
-      gl.uniform1f(uniforms.rot, currentRot);
-      gl.uniform1f(uniforms.hoverIntensity, hoverIntensity);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
-      rafRef.current = requestAnimationFrame(update);
-    };
-    rafRef.current = requestAnimationFrame(update);
-
     return () => {
+      isAnimating = false;
+      observer.disconnect();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      window.removeEventListener('resize', resize);
-      container.removeEventListener('mousemove', handleMouseMove);
-      container.removeEventListener('mouseleave', handleMouseLeave);
+      if (resize) window.removeEventListener('resize', resize);
+      if (handleMouseMove) container.removeEventListener('mousemove', handleMouseMove);
+      if (handleMouseLeave) container.removeEventListener('mouseleave', handleMouseLeave);
       if (canvas.parentNode) container.removeChild(canvas);
-      gl.getExtension('WEBGL_lose_context')?.loseContext();
+      glRef.current?.getExtension('WEBGL_lose_context')?.loseContext();
     };
-  }, [hue, hoverIntensity, rotateOnHover, forceHoverState, animSpeed, vert, frag]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hue, hoverIntensity, rotateOnHover, forceHoverState, animSpeed]);
+
+  // Animation runs continuously - visibility tracking kept for future optimization
+  // Removed pause/resume logic that was causing glitching
 
   return <div ref={containerRef} className={`w-full h-full ${className}`} />;
 }

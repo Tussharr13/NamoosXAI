@@ -1,3 +1,4 @@
+import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
 import Products from './components/Products';
@@ -12,6 +13,7 @@ import FloatingParticles from './components/FloatingParticles';
 function App() {
   return (
     <div className="relative min-h-screen bg-white overflow-hidden">
+      <Navbar variant="transparent" scrollThreshold={100} />
       <FloatingParticles />
       <Hero />
       <About />

@@ -1,12 +1,14 @@
-import { Bot, Linkedin, Twitter, Youtube, Mail, Phone, MapPin } from 'lucide-react';
+import { Linkedin, Twitter, Youtube, Mail, Phone, MapPin } from 'lucide-react';
 import { BrandFull } from './Brand';
+import { BackgroundBeams } from './ui/beams';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-slate-900 text-white py-16">
-      <div className="max-w-7xl mx-auto px-6">
+    <footer className="relative bg-slate-900 text-white py-16 overflow-hidden min-h-[400px]">
+      <BackgroundBeams className="opacity-40" />
+      <div className="relative z-10 max-w-7xl mx-auto px-6">
         <div className="grid md:grid-cols-4 gap-12 mb-12">
           <div>
             <div className="mb-4">

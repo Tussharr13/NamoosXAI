@@ -11,10 +11,12 @@
 @layer utilities {
   .animate-float {
     animation: float 3s ease-in-out infinite;
+    will-change: transform;
   }
 
   .animate-float-delayed {
     animation: float 3s ease-in-out 1s infinite;
+    will-change: transform;
   }
 
   .animate-fade-in-up {
@@ -45,12 +47,29 @@
   }
 
   .card-hover {
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    will-change: transform;
   }
 
   .card-hover:hover {
     transform: translateY(-8px);
     box-shadow: 0 20px 40px rgba(56, 189, 248, 0.2);
+  }
+
+  /* Respect user's motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-float,
+    .animate-float-delayed,
+    .animate-fade-in-up,
+    .animate-slide-in-left,
+    .animate-slide-in-right,
+    .animate-pulse,
+    .animate-pulse-ring,
+    .animate-spin,
+    .animate-ping {
+      animation: none !important;
+      transition: none !important;
+    }
   }
 }
 
@@ -113,4 +132,5 @@
 
 .animate-pulse-ring {
   animation: pulse-ring 2s ease-in-out infinite;
+  will-change: transform, opacity;
 }
