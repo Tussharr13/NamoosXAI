@@ -43,10 +43,10 @@ const Footer = memo(() => {
   const currentYear = useMemo(() => new Date().getFullYear(), []);
 
   return (
-    <footer className="relative bg-slate-900 text-white py-16 overflow-hidden min-h-[400px]">
-      <BackgroundBeams className="opacity-40" />
+    <footer className="relative bg-slate-900 text-white py-12 overflow-hidden">
+      <BackgroundBeams className="opacity-20" />
       <div className="relative z-10 max-w-7xl mx-auto px-6">
-        <div className="grid md:grid-cols-4 gap-12 mb-12">
+        <div className="grid md:grid-cols-4 gap-8 mb-10">
           <div>
             <div className="mb-4">
               <BrandFull size={160} variant="light" />

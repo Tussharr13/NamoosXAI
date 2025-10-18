@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Star, Quote } from 'lucide-react';
+import { Star } from 'lucide-react';
+import { memo } from 'react';
 
 const testimonials = [
   {
@@ -32,93 +32,62 @@ const testimonials = [
   },
 ];
 
-export default function Testimonials() {
-  const [current, setCurrent] = useState(0);
+const TestimonialCard = memo(({ testimonial }: { testimonial: typeof testimonials[0] }) => (
+  <div className="relative w-[350px] md:w-[400px] shrink-0 rounded-2xl bg-white border border-sky-100 shadow-lg hover:shadow-xl transition-shadow duration-300 p-6">
+    <div className="flex items-start gap-4 mb-4">
+      <div className="w-12 h-12 bg-gradient-to-br from-sky-400 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md flex-shrink-0">
+        {testimonial.avatar}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-base font-bold text-slate-900">{testimonial.name}</p>
+        <p className="text-sm text-slate-600 truncate">{testimonial.role}</p>
+      </div>
+      <div className="flex gap-0.5 flex-shrink-0">
+        {[...Array(testimonial.rating)].map((_, i) => (
+          <Star key={i} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+        ))}
+      </div>
+    </div>
+    <p className="text-sm text-slate-700 leading-relaxed">
+      "{testimonial.content}"
+    </p>
+  </div>
+));
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
+TestimonialCard.displayName = 'TestimonialCard';
 
-  const next = () => {
-    setCurrent((prev) => (prev + 1) % testimonials.length);
-  };
-
-  const prev = () => {
-    setCurrent((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-  };
-
+const Testimonials = memo(() => {
   return (
-    <section className="py-24 gradient-blue-radial relative overflow-hidden">
-      <div className="max-w-5xl mx-auto px-6">
-        <div className="text-center mb-16 animate-fade-in-up">
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-            What Our <span className="text-gradient">Clients Say</span>
+    <section className="py-20 bg-gradient-to-b from-white via-blue-50/30 to-white relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-transparent to-purple-50/30"></div>
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="text-center mb-14">
+          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-5 leading-tight">
+            What Our <span className="bg-gradient-to-r from-sky-500 to-purple-600 bg-clip-text text-transparent">Clients Say</span>
           </h2>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Real results from businesses that trust NamoosX
+          <p className="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
+            Real results from businesses that trust NamoosX AI solutions
           </p>
         </div>
 
-        <div className="relative">
-          <div className="absolute -left-12 top-0 text-sky-300 opacity-20">
-            <Quote className="w-32 h-32" />
-          </div>
-
-          <div className="bg-white rounded-3xl p-12 shadow-2xl border border-sky-100 relative">
-            <div className="flex flex-col items-center text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-sky-400 to-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-6 shadow-lg">
-                {testimonials[current].avatar}
-              </div>
-
-              <div className="flex mb-6">
-                {[...Array(testimonials[current].rating)].map((_, i) => (
-                  <Star key={i} className="w-6 h-6 text-yellow-400 fill-yellow-400" />
-                ))}
-              </div>
-
-              <p className="text-xl text-slate-700 leading-relaxed mb-8 max-w-3xl italic">
-                "{testimonials[current].content}"
-              </p>
-
-              <div>
-                <p className="text-lg font-bold text-slate-900">{testimonials[current].name}</p>
-                <p className="text-slate-600">{testimonials[current].role}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-center items-center mt-8 space-x-4">
-            <button
-              onClick={prev}
-              className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border border-sky-100"
-            >
-              <ChevronLeft className="w-6 h-6 text-slate-700" />
-            </button>
-
-            <div className="flex space-x-2">
-              {testimonials.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrent(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    current === index ? 'bg-sky-600 w-8' : 'bg-sky-200'
-                  }`}
-                />
-              ))}
-            </div>
-
-            <button
-              onClick={next}
-              className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border border-sky-100"
-            >
-              <ChevronRight className="w-6 h-6 text-slate-700" />
-            </button>
+        <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,white_10%,white_90%,transparent)]">
+          <div 
+            className="flex gap-4 py-4 animate-scroll hover:[animation-play-state:paused]"
+            style={{
+              '--animation-duration': '40s',
+              '--animation-direction': 'forwards',
+            } as React.CSSProperties}
+          >
+            {[...testimonials, ...testimonials].map((testimonial, idx) => (
+              <TestimonialCard key={`${testimonial.name}-${idx}`} testimonial={testimonial} />
+            ))}
           </div>
         </div>
       </div>
     </section>
   );
-}
+});
+
+Testimonials.displayName = 'Testimonials';
+
+export default Testimonials;

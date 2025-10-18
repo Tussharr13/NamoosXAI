@@ -1,6 +1,6 @@
-import { Sparkles, MessageSquare, TrendingUp, Users } from 'lucide-react';
+import { Sparkles, MessageSquare } from 'lucide-react';
 import SiriOrb from './SiriOrb';
-import { useRef, useMemo, useCallback, memo } from 'react';
+import { useMemo, useCallback, memo } from 'react';
 import { isLowEndDevice, isTouchDevice } from '../utils/deviceDetection';
 
 // Helper function for smooth scroll
@@ -12,8 +12,6 @@ const scrollToSection = (sectionId: string) => {
 };
 
 const Hero = memo(() => {
-  const heroRef = useRef<HTMLElement | null>(null);
-  
   // Memoize device detection to prevent recalculation on every render
   const lowEndMode = useMemo(() => isLowEndDevice(), []);
   const isTouch = useMemo(() => isTouchDevice(), []);
@@ -27,95 +25,69 @@ const Hero = memo(() => {
     scrollToSection('contact');
   }, []);
 
+  // Memoize button classes to prevent recreation
+  const primaryBtnClass = useMemo(() => 
+    `group bg-gradient-to-r from-sky-500 to-blue-600 text-white px-10 py-4 rounded-full font-semibold hover:shadow-lg ${isTouch ? '' : 'hover:scale-105'} transition-all duration-200 flex items-center justify-center gap-2`,
+    [isTouch]
+  );
+
+  const secondaryBtnClass = useMemo(() => 
+    `bg-slate-800/80 border-2 border-sky-500/30 text-white px-10 py-4 rounded-full font-semibold hover:border-sky-400 ${isTouch ? '' : 'hover:scale-105'} transition-all duration-200 flex items-center justify-center gap-2`,
+    [isTouch]
+  );
+
   return (
-    <section ref={heroRef} className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Reduce blur intensity on low-end devices */}
-        <div className={`absolute top-20 left-10 w-96 h-96 bg-sky-500/10 rounded-full ${lowEndMode ? 'blur-xl' : 'blur-3xl'} animate-float`} style={{ willChange: 'transform' }}></div>
-        <div className={`absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full ${lowEndMode ? 'blur-xl' : 'blur-3xl'} animate-float-delayed`} style={{ willChange: 'transform' }}></div>
-        <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-br from-sky-500/5 to-blue-500/5 rounded-full ${lowEndMode ? 'blur-xl' : 'blur-3xl'}`}></div>
-      </div>
+    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0a1628] via-[#0d2850] to-[#1e5f8f] overflow-hidden">
+      {/* Strong radial gradient glow effect around orb */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(59,130,246,0.3)_0%,_rgba(30,64,175,0.2)_30%,_transparent_60%)]"></div>
+      
+      {/* Bottom cyan gradient */}
+      <div className="absolute bottom-0 left-0 right-0 h-96 bg-gradient-to-t from-cyan-600/20 via-blue-700/10 to-transparent"></div>
 
-      {/* Background Siri orb (from /siri) */}
-      <div className="absolute inset-0 flex items-center justify-center z-0 opacity-30">
-        <div className="w-[28rem] h-[28rem] md:w-[34rem] md:h-[34rem] lg:w-[38rem] lg:h-[38rem]">
-          <SiriOrb hue={0} hoverIntensity={0.1} rotateOnHover={true} forceHoverState={false} animSpeed={0.3} />
-        </div>
-      </div>
+      {/* Main content container - Text left, Orb right */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 pt-20">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          
+          {/* Left side - Text content */}
+          <div className="space-y-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.1] animate-fade-in-up">
+              AI Agents That Deliver<br />
+              <span className="bg-gradient-to-r from-sky-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">Human-Like Customer</span><br />
+              <span className="text-slate-100">Experiences</span>
+            </h1>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-28 pb-12">
-        <div className="text-center">
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight max-w-4xl mx-auto">
-            AI Agents, That Deliver<br />
-            <span className="bg-gradient-to-r from-sky-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">Human-Like Customer</span><br />
-            Experiences
-          </h1>
+            <p className="text-lg md:text-xl text-slate-300 leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+              Transform your business with <span className="text-sky-400 font-semibold">intelligent automation</span>. 
+              NamoosX delivers advanced conversational AI that automates interactions, boosts sales, and provides exceptional 24/7 support.
+            </p>
 
-          <p className="text-base md:text-lg text-slate-400 mb-6 max-w-2xl mx-auto leading-relaxed">
-            Scale your business with intelligent automation. NamoosX delivers advanced conversational
-            AI that helps you automate interactions, boost sales, and provide exceptional support.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <button 
-              onClick={handleExploreSolutions}
-              className={`bg-gradient-to-r from-sky-500 to-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-2xl hover:shadow-sky-500/50 ${isTouch ? '' : 'hover:scale-105'} transition-transform duration-300 flex items-center justify-center space-x-2`}
-            >
-              <span>Explore Our Solutions</span>
-            </button>
-            <button 
-              onClick={handleRequestDemo}
-              className={`bg-slate-800 border-2 border-slate-700 text-white px-8 py-3 rounded-full font-semibold hover:bg-slate-700 hover:border-sky-500 ${isTouch ? '' : 'hover:scale-105'} transition-all duration-300 flex items-center justify-center space-x-2`}
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span>Request a Demo</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="mt-8 w-full">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto mb-8">
-            <div className={`text-center p-3 rounded-lg ${lowEndMode ? 'bg-slate-800/90' : 'bg-slate-800/30 backdrop-blur-sm'} border border-slate-700/50 hover:border-sky-500/30 transition-colors`}>
-              <div className="text-2xl md:text-3xl font-bold text-white mb-1">50+</div>
-              <div className="text-slate-400 text-xs">Projects Completed</div>
-            </div>
-            <div className={`text-center p-3 rounded-lg ${lowEndMode ? 'bg-slate-800/90' : 'bg-slate-800/30 backdrop-blur-sm'} border border-slate-700/50 hover:border-sky-500/30 transition-colors`}>
-              <div className="text-2xl md:text-3xl font-bold text-white mb-1">98%</div>
-              <div className="text-slate-400 text-xs">Client Satisfaction</div>
-            </div>
-            <div className={`text-center p-3 rounded-lg ${lowEndMode ? 'bg-slate-800/90' : 'bg-slate-800/30 backdrop-blur-sm'} border border-slate-700/50 hover:border-sky-500/30 transition-colors`}>
-              <div className="text-2xl md:text-3xl font-bold text-white mb-1">50+</div>
-              <div className="text-slate-400 text-xs">AI Solutions Deployed</div>
-            </div>
-            <div className={`text-center p-3 rounded-lg ${lowEndMode ? 'bg-slate-800/90' : 'bg-slate-800/30 backdrop-blur-sm'} border border-slate-700/50 hover:border-sky-500/30 transition-colors`}>
-              <div className="text-2xl md:text-3xl font-bold text-white mb-1">24/7</div>
-              <div className="text-slate-400 text-xs">Support Available</div>
+            <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+              <button 
+                onClick={handleExploreSolutions}
+                className={primaryBtnClass}
+              >
+                <span>Explore Our Solutions</span>
+                <Sparkles className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={handleRequestDemo}
+                className={secondaryBtnClass}
+              >
+                <MessageSquare className="w-5 h-5" />
+                <span>Request a Demo</span>
+              </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
-            <div className={`${lowEndMode ? 'bg-slate-800/90' : 'bg-slate-800/50 backdrop-blur-sm'} p-6 rounded-xl shadow-lg animate-float border border-slate-700 hover:border-sky-500/50 transition-transform duration-300 ${isTouch ? '' : 'hover:scale-105'}`} style={{ willChange: 'transform' }}>
-              <div className="w-12 h-12 bg-gradient-to-br from-sky-400 to-blue-600 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                <TrendingUp className="w-6 h-6 text-white" />
+          {/* Right side - SiriOrb */}
+          {!lowEndMode && (
+            <div className="flex items-center justify-center pointer-events-none">
+              <div className="w-[28rem] h-[28rem] md:w-[36rem] md:h-[36rem]">
+                <SiriOrb hue={0} hoverIntensity={0} rotateOnHover={false} forceHoverState={true} animSpeed={0.4} />
               </div>
-              <p className="text-base font-semibold text-white mb-2">Boost Sales</p>
-              <p className="text-xs text-slate-400">Increase conversions with AI</p>
             </div>
-            <div className={`${lowEndMode ? 'bg-slate-800/90' : 'bg-slate-800/50 backdrop-blur-sm'} p-6 rounded-xl shadow-lg animate-float-delayed border border-slate-700 hover:border-sky-500/50 transition-transform duration-300 ${isTouch ? '' : 'hover:scale-105'}`} style={{ willChange: 'transform' }}>
-              <div className="w-12 h-12 bg-gradient-to-br from-sky-400 to-blue-600 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <p className="text-base font-semibold text-white mb-2">24/7 Support</p>
-              <p className="text-xs text-slate-400">Never miss a customer</p>
-            </div>
-            <div className={`${lowEndMode ? 'bg-slate-800/90' : 'bg-slate-800/50 backdrop-blur-sm'} p-6 rounded-xl shadow-lg animate-float border border-slate-700 hover:border-sky-500/50 transition-transform duration-300 ${isTouch ? '' : 'hover:scale-105'}`} style={{ willChange: 'transform' }}>
-              <div className="w-12 h-12 bg-gradient-to-br from-sky-400 to-blue-600 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                <Sparkles className="w-6 h-6 text-white" />
-              </div>
-              <p className="text-base font-semibold text-white mb-2">Smart Automation</p>
-              <p className="text-xs text-slate-400">Reduce operational costs</p>
-            </div>
-          </div>
+          )}
+
         </div>
       </div>
     </section>

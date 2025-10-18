@@ -19,6 +19,8 @@ export default function Navbar({ variant = 'transparent', scrollThreshold = 80 }
   const [scrolled, setScrolled] = useState(false);
   const [activeHref, setActiveHref] = useState('#');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   
   const circleRefs = useRef<Array<HTMLSpanElement | null>>([]);
   const tlRefs = useRef<Array<gsap.core.Timeline | null>>([]);
@@ -33,7 +35,24 @@ export default function Navbar({ variant = 'transparent', scrollThreshold = 80 }
     const handleScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
-          setScrolled(window.scrollY > scrollThreshold);
+          const currentScrollY = window.scrollY;
+          
+          setScrolled(currentScrollY > scrollThreshold);
+          
+          // Floating behavior: hide when scrolling down, show when scrolling up
+          if (currentScrollY < 50) {
+            // Always show at the top
+            setVisible(true);
+          } else {
+            // Hide when scrolling down, show when scrolling up
+            if (currentScrollY > lastScrollY) {
+              setVisible(false);
+            } else {
+              setVisible(true);
+            }
+          }
+          
+          setLastScrollY(currentScrollY);
           
           // Update active section based on scroll position
           const sections = ['about', 'products', 'industries', 'contact'];
@@ -57,7 +76,7 @@ export default function Navbar({ variant = 'transparent', scrollThreshold = 80 }
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [scrollThreshold]);
+  }, [scrollThreshold, lastScrollY]);
 
   // Memoize computed values to prevent unnecessary re-renders
   const isTransparent = useMemo(() => variant === 'transparent' && !scrolled, [variant, scrolled]);
@@ -221,8 +240,8 @@ export default function Navbar({ variant = 'transparent', scrollThreshold = 80 }
 
   // Memoize CSS variables to prevent unnecessary recalculations
   const cssVars = useMemo(() => {
-    const baseColor = isTransparent ? '#1e293b' : '#ffffff';
-    const pillColor = isTransparent ? '#0f172a' : '#f8fafc';
+    const baseColor = isTransparent ? 'transparent' : '#ffffff';
+    const pillColor = 'transparent';
     const hoveredPillTextColor = isTransparent ? '#38bdf8' : '#0ea5e9';
     const pillTextColor = isTransparent ? '#e2e8f0' : '#334155';
 
@@ -238,22 +257,27 @@ export default function Navbar({ variant = 'transparent', scrollThreshold = 80 }
   }, [isTransparent]);
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 p-4">
-      <div 
-        className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3 rounded-2xl backdrop-blur-xl border shadow-lg transition-all duration-300" 
-        style={{
-          ...cssVars,
-          background: isTransparent 
-            ? 'rgba(15, 23, 42, 0.7)' 
-            : 'rgba(255, 255, 255, 0.8)',
-          borderColor: isTransparent 
-            ? 'rgba(148, 163, 184, 0.1)' 
-            : 'rgba(226, 232, 240, 0.8)',
-          boxShadow: isTransparent
-            ? '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
-            : '0 8px 32px 0 rgba(31, 38, 135, 0.15)'
-        }}
-      >
+    <div 
+      className="fixed top-0 left-0 right-0 z-50 p-4 transition-transform duration-300 ease-in-out"
+      style={{
+        transform: visible ? 'translateY(0)' : 'translateY(-100%)'
+      }}
+    >
+        <div 
+          className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3 rounded-2xl backdrop-blur-xl border shadow-lg transition-all duration-300" 
+          style={{
+            ...cssVars,
+            background: isTransparent 
+              ? 'rgba(15, 23, 42, 0.7)' 
+              : 'rgba(255, 255, 255, 0.8)',
+            borderColor: isTransparent 
+              ? 'rgba(148, 163, 184, 0.1)' 
+              : 'rgba(226, 232, 240, 0.8)',
+            boxShadow: isTransparent
+              ? '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
+              : '0 8px 32px 0 rgba(31, 38, 135, 0.15)'
+          }}
+        >
         {/* Original Logo */}
         <BrandFull
           size={120}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo, useMemo } from 'react';
 import { isLowEndDevice, prefersReducedMotion } from '../utils/deviceDetection';
 
 interface Particle {
@@ -10,42 +10,48 @@ interface Particle {
   delay: number;
 }
 
-export default function FloatingParticles() {
+const FloatingParticles = memo(() => {
   const [particles, setParticles] = useState<Particle[]>([]);
   const lowEndMode = isLowEndDevice();
   const reducedMotion = prefersReducedMotion();
 
+  // Memoize particle count
+  const particleCount = useMemo(() => 
+    reducedMotion ? 0 : (lowEndMode ? 5 : 12),
+    [reducedMotion, lowEndMode]
+  );
+
   useEffect(() => {
-    // Reduce particle count on low-end devices or if user prefers reduced motion
-    const particleCount = reducedMotion ? 0 : (lowEndMode ? 8 : 20);
-    
+    // Further reduced particle count for better performance
     const newParticles = Array.from({ length: particleCount }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
-      size: Math.random() * 6 + 2,
-      duration: Math.random() * 10 + 10,
-      delay: Math.random() * 5,
+      size: Math.random() * 4 + 2, // Smaller particles
+      duration: Math.random() * 8 + 12, // Slower, smoother animation
+      delay: Math.random() * 3,
     }));
     setParticles(newParticles);
-  }, []);
+  }, [particleCount]);
 
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
       {particles.map((particle) => (
         <div
           key={particle.id}
-          className={`absolute rounded-full bg-sky-400/20 ${lowEndMode ? '' : 'blur-sm'}`}
+          className={`absolute rounded-full bg-sky-400/15 will-change-transform ${lowEndMode ? '' : 'blur-[2px]'}`}
           style={{
-            left: `${particle.x}%`,
-            top: `${particle.y}%`,
+            transform: `translate(${particle.x}vw, ${particle.y}vh)`,
             width: `${particle.size}px`,
             height: `${particle.size}px`,
             animation: `float ${particle.duration}s ease-in-out ${particle.delay}s infinite`,
-            willChange: 'transform', // GPU acceleration hint
           }}
         />
       ))}
     </div>
   );
-}
+});
+
+FloatingParticles.displayName = 'FloatingParticles';
+
+export default FloatingParticles;

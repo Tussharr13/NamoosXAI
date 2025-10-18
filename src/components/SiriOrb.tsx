@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { getDevicePixelRatio } from '../utils/deviceDetection';
+import { useEffect, useRef, useState, memo } from 'react';
+import { getDevicePixelRatio, isLowEndDevice } from '../utils/deviceDetection';
 
 type SiriOrbProps = {
   hue?: number;
@@ -10,7 +10,7 @@ type SiriOrbProps = {
   className?: string;
 };
 
-export default function SiriOrb({
+const SiriOrb = memo(function SiriOrb({
   hue = 0,
   hoverIntensity = 0.2,
   rotateOnHover = true,
@@ -98,7 +98,8 @@ export default function SiriOrb({
     void main(){ vec2 fragCoord=vUv*iResolution.xy; vec4 col=mainImage(fragCoord); gl_FragColor=vec4(col.rgb*col.a,col.a); }
   `;
 
-  const [, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(true);
+  const isLowEnd = isLowEndDevice();
 
   useEffect(() => {
     const container = containerRef.current;
@@ -158,8 +159,12 @@ export default function SiriOrb({
       let currentHover = 0; let targetHover = 0; let currentRot = 0; let lastTime = 0;
 
       const _resize = () => {
-        // Use optimized DPR for low-end devices
-        const dpr = getDevicePixelRatio(); 
+        // Use optimized DPR for low-end devices, further reduced for performance
+        let dpr = getDevicePixelRatio();
+        // Cap DPR for better performance
+        if (isLowEnd) dpr = Math.min(dpr, 0.75);
+        else dpr = Math.min(dpr, 1.5);
+        
         const width = container.clientWidth; 
         const height = container.clientHeight;
         canvas.width = width * dpr; 
@@ -187,14 +192,16 @@ export default function SiriOrb({
       _resize();
 
       const update = (t: number) => {
-        // Only animate if visible and not paused
+        // Only animate if visible
         if (!isAnimating) return;
         
         const dt = (t - lastTime) * 0.001; lastTime = t;
         const effectiveHover = forceHoverState ? 1 : targetHover; 
         currentHover += (effectiveHover - currentHover) * 0.1;
         if (rotateOnHover && effectiveHover > 0.5) currentRot += dt * 0.3;
-        const speed = currentHover > 0.5 ? 0.7 : (animSpeed ?? 0.6);
+        
+        // Reduced animation speed for smoother performance
+        const speed = currentHover > 0.5 ? 0.5 : (animSpeed ?? 0.4);
         gl.uniform1f(uniforms.animSpeed, speed);
         gl.uniform1f(uniforms.iTime, t * 0.001);
         gl.uniform1f(uniforms.hue, hue);
@@ -203,7 +210,11 @@ export default function SiriOrb({
         gl.uniform1f(uniforms.hoverIntensity, hoverIntensity);
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
-        rafRef.current = requestAnimationFrame(update);
+        
+        // Only continue if still visible
+        if (isAnimating) {
+          rafRef.current = requestAnimationFrame(update);
+        }
       };
       rafRef.current = requestAnimationFrame(update);
 
@@ -224,10 +235,19 @@ export default function SiriOrb({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hue, hoverIntensity, rotateOnHover, forceHoverState, animSpeed]);
 
-  // Animation runs continuously - visibility tracking kept for future optimization
-  // Removed pause/resume logic that was causing glitching
+  // Pause animation when not visible
+  useEffect(() => {
+    if (!isVisible && rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  }, [isVisible]);
 
   return <div ref={containerRef} className={`w-full h-full ${className}`} />;
-}
+});
+
+SiriOrb.displayName = 'SiriOrb';
+
+export default SiriOrb;
 
 

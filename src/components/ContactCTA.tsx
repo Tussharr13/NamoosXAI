@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, memo, useCallback } from 'react';
 import { Send, CheckCircle } from 'lucide-react';
+import { WavyBackground } from './ui/wavy-background';
 
-export default function ContactCTA() {
+const ContactCTA = memo(() => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -10,43 +11,47 @@ export default function ContactCTA() {
   });
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
     setTimeout(() => {
       setSubmitted(false);
       setFormData({ name: '', email: '', company: '', message: '' });
     }, 3000);
-  };
+  }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
-  };
+  }, []);
 
   return (
-    <section id="contact" className="py-24 bg-white relative overflow-hidden">
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-sky-200 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-200 rounded-full blur-3xl"></div>
-      </div>
-
-      <div className="max-w-5xl mx-auto px-6 relative z-10">
-        <div className="text-center mb-12 animate-fade-in-up">
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-            Let's Build Your <span className="text-gradient">AI Assistant</span> Today!
+    <section id="contact" className="relative overflow-hidden">
+      <WavyBackground
+        className="max-w-5xl mx-auto px-6"
+        containerClassName="py-20"
+        colors={["#38bdf8", "#0ea5e9", "#06b6d4"]}
+        waveWidth={60}
+        backgroundFill="#ffffff"
+        blur={8}
+        speed="slow"
+        waveOpacity={0.4}
+      >
+        <div className="text-center mb-10">
+          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3">
+            Let's Build Your <span className="bg-gradient-to-r from-sky-500 to-blue-600 bg-clip-text text-transparent">AI Assistant</span> Today!
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             Get in touch with our team to discuss how NamoosX can transform your business
           </p>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-2xl border border-sky-100 p-8 md:p-12">
+        <div className="bg-white rounded-3xl shadow-2xl border border-sky-200 p-6 md:p-10 will-change-transform">
           {submitted ? (
-            <div className="text-center py-12 animate-fade-in-up">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="text-center py-10 animate-fade-in-up">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
                 <CheckCircle className="w-10 h-10 text-green-600" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-2">Thank You!</h3>
@@ -118,7 +123,7 @@ export default function ContactCTA() {
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-sky-500 to-blue-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2"
+                className="w-full bg-gradient-to-r from-sky-500 to-blue-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 flex items-center justify-center space-x-2"
               >
                 <Send className="w-5 h-5" />
                 <span>Send Message</span>
@@ -126,7 +131,11 @@ export default function ContactCTA() {
             </form>
           )}
         </div>
-      </div>
+      </WavyBackground>
     </section>
   );
-}
+});
+
+ContactCTA.displayName = 'ContactCTA';
+
+export default ContactCTA;
