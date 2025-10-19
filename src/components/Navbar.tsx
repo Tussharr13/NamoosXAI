@@ -264,7 +264,7 @@ export default function Navbar({ variant = 'transparent', scrollThreshold = 80 }
       }}
     >
         <div 
-          className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3 rounded-2xl backdrop-blur-xl border shadow-lg transition-all duration-300" 
+          className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3 rounded-[40px] backdrop-blur-xl border shadow-lg transition-all duration-300" 
           style={{
             ...cssVars,
             background: isTransparent 
