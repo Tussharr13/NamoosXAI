@@ -30,8 +30,8 @@ const ContactCTA = memo(() => {
   return (
     <section id="contact" className="relative overflow-hidden">
       <WavyBackground
-        className="max-w-5xl mx-auto px-6"
-        containerClassName="py-20"
+        className="max-w-5xl mx-auto px-4 sm:px-6"
+        containerClassName="py-12 sm:py-16 md:py-20"
         colors={["#38bdf8", "#0ea5e9", "#06b6d4"]}
         waveWidth={60}
         backgroundFill="#ffffff"
@@ -39,31 +39,31 @@ const ContactCTA = memo(() => {
         speed="slow"
         waveOpacity={0.4}
       >
-        <div className="text-center mb-10">
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3">
+        <div className="text-center mb-8 sm:mb-10">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-3">
             Let's Build Your <span className="bg-gradient-to-r from-sky-500 to-blue-600 bg-clip-text text-transparent">AI Assistant</span> Today!
           </h2>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto px-4">
             Get in touch with our team to discuss how NamoosX can transform your business
           </p>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-2xl border border-sky-200 p-6 md:p-10 will-change-transform">
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-sky-200 p-5 sm:p-6 md:p-10 will-change-transform">
           {submitted ? (
-            <div className="text-center py-10 animate-fade-in-up">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
-                <CheckCircle className="w-10 h-10 text-green-600" />
+            <div className="text-center py-8 sm:py-10 animate-fade-in-up">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-5">
+                <CheckCircle className="w-8 h-8 sm:w-10 sm:h-10 text-green-600" />
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">Thank You!</h3>
-              <p className="text-slate-600">
+              <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">Thank You!</h3>
+              <p className="text-sm sm:text-base text-slate-600">
                 We've received your message and will get back to you shortly.
               </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                     Full Name *
                   </label>
                   <input
@@ -72,12 +72,12 @@ const ContactCTA = memo(() => {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 rounded-xl border-2 border-sky-100 focus:border-sky-400 focus:outline-none transition-colors"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 border-sky-100 focus:border-sky-400 focus:outline-none transition-colors text-sm sm:text-base"
                     placeholder="John Doe"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                     Email Address *
                   </label>
                   <input
@@ -86,14 +86,14 @@ const ContactCTA = memo(() => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 rounded-xl border-2 border-sky-100 focus:border-sky-400 focus:outline-none transition-colors"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 border-sky-100 focus:border-sky-400 focus:outline-none transition-colors text-sm sm:text-base"
                     placeholder="john@company.com"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                   Company Name
                 </label>
                 <input
@@ -101,13 +101,13 @@ const ContactCTA = memo(() => {
                   name="company"
                   value={formData.company}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-sky-100 focus:border-sky-400 focus:outline-none transition-colors"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 border-sky-100 focus:border-sky-400 focus:outline-none transition-colors text-sm sm:text-base"
                   placeholder="Your Company"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                   Message *
                 </label>
                 <textarea
@@ -115,17 +115,17 @@ const ContactCTA = memo(() => {
                   value={formData.message}
                   onChange={handleChange}
                   required
-                  rows={5}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-sky-100 focus:border-sky-400 focus:outline-none transition-colors resize-none"
+                  rows={4}
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 border-sky-100 focus:border-sky-400 focus:outline-none transition-colors resize-none text-sm sm:text-base"
                   placeholder="Tell us about your needs..."
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-sky-500 to-blue-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 flex items-center justify-center space-x-2"
+                className="w-full bg-gradient-to-r from-sky-500 to-blue-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full font-semibold text-base sm:text-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 flex items-center justify-center space-x-2"
               >
-                <Send className="w-5 h-5" />
+                <Send className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span>Send Message</span>
               </button>
             </form>

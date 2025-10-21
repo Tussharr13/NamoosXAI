@@ -27,12 +27,12 @@ const Hero = memo(() => {
 
   // Memoize button classes to prevent recreation
   const primaryBtnClass = useMemo(() => 
-    `group bg-gradient-to-r from-sky-500 to-blue-600 text-white px-10 py-4 rounded-full font-semibold hover:shadow-lg ${isTouch ? '' : 'hover:scale-105'} transition-all duration-200 flex items-center justify-center gap-2`,
+    `group bg-gradient-to-r from-sky-500 to-blue-600 text-white px-6 sm:px-8 md:px-10 py-3 sm:py-4 rounded-full font-semibold hover:shadow-lg ${isTouch ? '' : 'hover:scale-105'} transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base`,
     [isTouch]
   );
 
   const secondaryBtnClass = useMemo(() => 
-    `bg-slate-800/80 border-2 border-sky-500/30 text-white px-10 py-4 rounded-full font-semibold hover:border-sky-400 ${isTouch ? '' : 'hover:scale-105'} transition-all duration-200 flex items-center justify-center gap-2`,
+    `bg-slate-800/80 border-2 border-sky-500/30 text-white px-6 sm:px-8 md:px-10 py-3 sm:py-4 rounded-full font-semibold hover:border-sky-400 ${isTouch ? '' : 'hover:scale-105'} transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base`,
     [isTouch]
   );
 
@@ -45,23 +45,23 @@ const Hero = memo(() => {
       <div className="absolute bottom-0 left-0 right-0 h-96 bg-gradient-to-t from-cyan-600/20 via-blue-700/10 to-transparent"></div>
 
       {/* Main content container - Text left, Orb right */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 pt-20">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 pt-20 pb-10">
+        <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
           
           {/* Left side - Text content */}
-          <div className="space-y-6">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.1] animate-fade-in-up">
-              AI Agents That Deliver<br />
-              <span className="bg-gradient-to-r from-sky-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">Human-Like Customer</span><br />
+          <div className="space-y-4 sm:space-y-6 text-center md:text-left">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.15] animate-fade-in-up">
+              AI Agents That Deliver<br className="hidden sm:block" />
+              <span className="bg-gradient-to-r from-sky-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">Human-Like Customer</span><br className="hidden sm:block" />
               <span className="text-slate-100">Experiences</span>
             </h1>
 
-            <p className="text-lg md:text-xl text-slate-300 leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <p className="text-base sm:text-lg md:text-xl text-slate-300 leading-relaxed animate-fade-in-up max-w-2xl mx-auto md:mx-0" style={{ animationDelay: '0.1s' }}>
               Transform your business with <span className="text-sky-400 font-semibold">intelligent automation</span>. 
               NamoosX delivers advanced conversational AI that automates interactions, boosts sales, and provides exceptional 24/7 support.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 animate-fade-in-up justify-center md:justify-start" style={{ animationDelay: '0.2s' }}>
               <button 
                 onClick={handleExploreSolutions}
                 className={primaryBtnClass}
@@ -81,8 +81,8 @@ const Hero = memo(() => {
 
           {/* Right side - SiriOrb */}
           {!lowEndMode && (
-            <div className="flex items-center justify-center pointer-events-none">
-              <div className="w-[28rem] h-[28rem] md:w-[36rem] md:h-[36rem]">
+            <div className="flex items-center justify-center pointer-events-none mt-8 md:mt-0">
+              <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[28rem] md:h-[28rem] lg:w-[36rem] lg:h-[36rem]">
                 <SiriOrb hue={0} hoverIntensity={0} rotateOnHover={false} forceHoverState={true} animSpeed={0.4} />
               </div>
             </div>
